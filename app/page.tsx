@@ -16,17 +16,17 @@ export default function HomePage() {
     <main className="min-h-screen bg-gradient-to-b from-rose-900/90 via-purple-900/90 to-slate-900/90 relative overflow-hidden pb-20">
       <FloatingBackgroundHearts />
       
-      <div className="max-w-6xl mx-auto px-4 py-8 md:py-16 relative z-10">
+      <div className="max-w-2xl mx-auto px-4 py-8 md:py-16 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8 md:mb-12"
         >
           <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-300 mb-3 md:mb-4 text-glow">
-          Valentine&apos;s Whispers
+            Valentine&apos;s Whispers
           </h1>
           <p className="text-base md:text-lg text-pink-200/80">
-          Share your heartfelt messages anonymously ❤️
+            Share your heartfelt messages anonymously ❤️
           </p>
         </motion.div>
 
@@ -34,7 +34,7 @@ export default function HomePage() {
           <CreatePostForm />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="space-y-4">
           {posts === undefined ? (
             // Loading state
             <>
@@ -51,24 +51,35 @@ export default function HomePage() {
             </>
           ) : posts.length === 0 ? (
             // Empty state
-            <div className="col-span-full text-center py-12">
+            <motion.div 
+              className="text-center py-12"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
               <p className="text-pink-200/80 text-lg">
                 No messages yet. Be the first to share your thoughts! 💝
               </p>
-            </div>
+            </motion.div>
           ) : (
             // Posts list
-            posts.map((post) => (
-              <PostCard
+            posts.map((post, index) => (
+              <motion.div
                 key={post._id.toString()}
-                id={post._id}
-                name={post.name}
-                gender={post.gender}
-                content={post.content}
-                createdAt={post.createdAt}
-                likes={post.likes ?? 0}
-                likedBy={post.likedBy ?? []}
-              />
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <PostCard
+                  id={post._id}
+                  name={post.name}
+                  gender={post.gender}
+                  content={post.content}
+                  createdAt={post.createdAt}
+                  likes={post.likes ?? 0}
+                  likedBy={post.likedBy ?? []}
+                  commentCount={post.commentCount ?? 0}
+                />
+              </motion.div>
             ))
           )}
         </div>
