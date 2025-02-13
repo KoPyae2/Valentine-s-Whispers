@@ -108,22 +108,6 @@ const DialogDescription = React.forwardRef<
 ))
 DialogDescription.displayName = DialogPrimitive.Description.displayName
 
-interface DialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  children: React.ReactNode;
-}
-
-export function Dialog({ open, children }: DialogProps) {
-  if (!open) return null;
-  
-  return (
-    <div className="fixed inset-0 z-50">
-      {children}
-    </div>
-  );
-}
-
 export {
   Dialog,
   DialogPortal,

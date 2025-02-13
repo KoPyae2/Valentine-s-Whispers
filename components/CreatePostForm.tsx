@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Heart, Mars, Venus, Check } from "lucide-react";
 import { useMutation } from "convex/react";
-import { useTranslations } from 'next-intl';
 import { api } from "@/convex/_generated/api";
 
 type Gender = "male" | "female";
@@ -25,7 +24,6 @@ export default function CreatePostForm() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const createPost = useMutation(api.posts.createPost);
-  const t = useTranslations();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -216,12 +214,12 @@ export default function CreatePostForm() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={t('form.name')}
+                placeholder="Your name"
                 className="w-full p-3 rounded-lg bg-black/20 border border-pink-200/20 text-white placeholder-pink-200/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 text-sm md:text-base"
                 maxLength={30}
               />
               <div className="mt-1 text-xs text-pink-300/70">
-                {name.length}/30 {t('form.characters')}
+                {name.length}/30 characters
               </div>
             </div>
             <div className="flex gap-2 md:gap-3">
@@ -244,7 +242,7 @@ export default function CreatePostForm() {
                 }`}>
                   <Mars className="w-4 h-4" />
                 </div>
-                <span className="text-sm font-medium">{t('form.male')}</span>
+                <span className="text-sm font-medium">Male</span>
                 {gender === "male" && (
                   <motion.div
                     className="absolute -inset-px rounded-xl border-2 border-blue-400/50"
@@ -272,7 +270,7 @@ export default function CreatePostForm() {
                 }`}>
                   <Venus className="w-4 h-4" />
                 </div>
-                <span className="text-sm font-medium">{t('form.female')}</span>
+                <span className="text-sm font-medium">Female</span>
                 {gender === "female" && (
                   <motion.div
                     className="absolute -inset-px rounded-xl border-2 border-pink-400/50"
@@ -290,7 +288,7 @@ export default function CreatePostForm() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onFocus={() => setIsExpanded(true)}
-            placeholder={t('form.placeholder')}
+            placeholder="Share your Valentine's message..."
             className="w-full h-24 md:h-32 p-4 rounded-lg bg-black/20 border border-pink-200/20 text-white placeholder-pink-200/50 focus:outline-none focus:ring-2 focus:ring-pink-500/50 resize-none text-sm md:text-base"
             maxLength={500}
           />
@@ -313,9 +311,9 @@ export default function CreatePostForm() {
           animate={{ opacity: 1 }}
         >
           <div className="flex items-center gap-1">
-            <Heart className="w-3 h-3" /> {t('form.shareWithLove')}
+            <Heart className="w-3 h-3" /> Share with love
           </div>
-          <span>{content.length}/500 {t('form.characters')}</span>
+          <span>{content.length}/500 characters</span>
         </motion.div>
       </div>
     </motion.form>
