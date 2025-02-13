@@ -1,0 +1,21 @@
+{
+  "title": "情人节悄悄话",
+  "subtitle": "匿名分享你的心声 ❤️",
+  "empty": "还没有消息。成为第一个分享想法的人！💝",
+  "form": {
+    "name": "你的名字",
+    "male": "男",
+    "female": "女",
+    "placeholder": "分享你的情人节消息...",
+    "shareWithLove": "用爱分享",
+    "characters": "字符"
+  },
+  "language": {
+    "title": "选择语言",
+    "description": "请选择您的首选语言以继续",
+    "en": "英语",
+    "zh": "中文",
+    "my": "缅甸语",
+    "select": "选择"
+  }
+} 

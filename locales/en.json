@@ -1,0 +1,21 @@
+{
+  "title": "Valentine's Whispers",
+  "subtitle": "Share your heartfelt messages anonymously ❤️",
+  "empty": "No messages yet. Be the first to share your thoughts! 💝",
+  "form": {
+    "name": "Your name",
+    "male": "Male",
+    "female": "Female",
+    "placeholder": "Share your Valentine's message...",
+    "shareWithLove": "Share with love",
+    "characters": "characters"
+  },
+  "language": {
+    "title": "Choose Your Language",
+    "description": "Please select your preferred language to continue",
+    "en": "English",
+    "zh": "Chinese",
+    "my": "Myanmar",
+    "select": "Select"
+  }
+} 

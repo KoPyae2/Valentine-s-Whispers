@@ -1,25 +1,75 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { User, Heart, Clock } from "lucide-react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface PostCardProps {
+  id: Id<"posts">;
   name: string;
   gender: string;
   content: string;
   createdAt: number;
+  likes: number;
+  likedBy: string[];
 }
 
-export default function PostCard({ name, gender, content, createdAt }: PostCardProps) {
+export default function PostCard({ id, name, gender, content, createdAt, likes, likedBy }: PostCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [sessionId, setSessionId] = useState<string>("");
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(likes);
+  const [isLiking, setIsLiking] = useState(false);
+  const toggleLike = useMutation(api.posts.toggleLike);
+
+  useEffect(() => {
+    // Generate or get existing session ID
+    const existingId = localStorage.getItem("sessionId");
+    if (existingId) {
+      setSessionId(existingId);
+    } else {
+      const newId = Math.random().toString(36).substring(2);
+      localStorage.setItem("sessionId", newId);
+      setSessionId(newId);
+    }
+  }, []);
+
+  useEffect(() => {
+    setIsLiked(likedBy.includes(sessionId));
+    setLikeCount(likes);
+  }, [likedBy, sessionId, likes]);
+
+  const handleLike = () => {
+    if (!sessionId || isLiking) return;
+    
+    // Optimistic update
+    const newLikeState = !isLiked;
+    setIsLiked(newLikeState);
+    setLikeCount(prev => newLikeState ? prev + 1 : prev - 1);
+    
+    // Background sync
+    setIsLiking(true);
+    toggleLike({ postId: id, sessionId })
+      .catch(error => {
+        // Revert on error
+        console.error('Failed to toggle like:', error);
+        setIsLiked(!newLikeState);
+        setLikeCount(prev => newLikeState ? prev - 1 : prev + 1);
+      })
+      .finally(() => {
+        setIsLiking(false);
+      });
+  };
 
   const getGenderColor = (gender: string) => {
     switch (gender) {
       case "male":
-        return "text-blue-400";
+        return "text-blue-400 bg-blue-400/10";
       case "female":
-        return "text-pink-400";
+        return "text-pink-400 bg-pink-400/10";
       default:
-        return "text-purple-400";
+        return "text-purple-400 bg-purple-400/10";
     }
   };
 
@@ -35,40 +85,170 @@ export default function PostCard({ name, gender, content, createdAt }: PostCardP
 
   return (
     <motion.div
-      className="relative p-4 md:p-6 rounded-lg bg-white/5 backdrop-blur-sm border border-pink-200/20 shadow-xl hover:shadow-pink-500/20 transition-all duration-300"
+      className="group relative p-4 md:p-6 rounded-xl bg-white/5 backdrop-blur-sm border border-pink-200/20 shadow-xl hover:shadow-pink-500/20 transition-all duration-300 overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
     >
-      <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-        <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center">
-          <User className="w-4 h-4 md:w-5 md:h-5 text-white" />
-        </div>
-        <div>
-          <h3 className={`font-medium text-sm md:text-base ${getGenderColor(gender)}`}>
-            {name}
-          </h3>
-          <p className="text-[10px] md:text-xs text-gray-400">
-            {formatDate(createdAt)}
-          </p>
-        </div>
-      </div>
-      
-      <p className="text-sm md:text-lg text-gray-200 leading-relaxed whitespace-pre-wrap break-words">
-        {content}
-      </p>
-
+      {/* Animated gradient background */}
       {isHovered && (
         <motion.div
-          className="absolute -inset-px bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-lg -z-10"
+          className="absolute inset-0 -z-10 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          animate={{ 
+            opacity: 1,
+            background: [
+              "linear-gradient(to right, rgba(236, 72, 153, 0.1), rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1))",
+              "linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(236, 72, 153, 0.1), rgba(168, 85, 247, 0.1))",
+              "linear-gradient(to right, rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1), rgba(236, 72, 153, 0.1))",
+            ]
+          }}
+          transition={{ 
+            duration: 5,
+            repeat: Infinity,
+            ease: "linear"
+          }}
         />
       )}
+
+      {/* Card content */}
+      <div className="relative">
+        <div className="flex items-center gap-3 mb-4">
+          {/* Avatar with pulse effect */}
+          <motion.div 
+            className={`relative rounded-full p-4 ${getGenderColor(gender)} shadow-lg`}
+            whileHover={{ scale: 1.1 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          >
+            <User className="w-5 h-5" />
+            <motion.div
+              className="absolute inset-0 rounded-full bg-current"
+              initial={{ opacity: 0.2 }}
+              animate={{ 
+                opacity: [0.1, 0.3, 0.1],
+                scale: [1, 1.05, 1]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          </motion.div>
+
+          {/* Name and Time with improved typography */}
+          <div className="flex-1">
+            <motion.h3 
+              className={`font-medium text-base md:text-lg tracking-wide ${getGenderColor(gender).split(' ')[0]}`}
+              layout
+            >
+              {name}
+            </motion.h3>
+            <div className="flex items-center gap-1.5 text-xs text-gray-400/80">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{formatDate(createdAt)}</span>
+            </div>
+          </div>
+
+          {/* Enhanced like button with counter */}
+          <div className="flex flex-col items-center gap-1.5">
+            <motion.button
+              className="relative group/heart"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={handleLike}
+              disabled={isLiking}
+            >
+              <Heart 
+                className={`w-6 h-6 transition-all duration-300 ${
+                  isLiked 
+                    ? "text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]" 
+                    : "text-gray-400 group-hover/heart:text-pink-400/50"
+                }`}
+                fill={isLiked ? "currentColor" : "none"}
+              />
+              <AnimatePresence>
+                {(isHovered || isLiked) && (
+                  <motion.div
+                    className={`absolute -inset-2 rounded-full -z-10 ${
+                      isLiked ? "bg-pink-400/20" : "bg-pink-400/10"
+                    }`}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ duration: 0.2 }}
+                  />
+                )}
+              </AnimatePresence>
+              
+              {/* Enhanced like animation */}
+              <AnimatePresence>
+                {isLiked && (
+                  <motion.div
+                    className="absolute -inset-4 pointer-events-none"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                  >
+                    {[...Array(6)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="absolute inset-0 flex items-center justify-center"
+                        initial={{ scale: 0, rotate: i * 60 }}
+                        animate={{
+                          scale: [0, 1, 0],
+                          rotate: [i * 60, i * 60 + 10],
+                        }}
+                        transition={{
+                          duration: 0.8,
+                          delay: i * 0.1,
+                          repeat: Infinity,
+                          repeatDelay: 2,
+                        }}
+                      >
+                        <Heart 
+                          className="w-3 h-3 text-pink-400 drop-shadow-[0_0_3px_rgba(236,72,153,0.5)]" 
+                          fill="currentColor" 
+                        />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+            
+            {/* Enhanced like counter */}
+            <motion.span
+              key={likeCount}
+              className={`text-xs font-medium ${
+                isLiked 
+                  ? "text-pink-400 drop-shadow-[0_0_3px_rgba(236,72,153,0.3)]" 
+                  : "text-gray-400"
+              }`}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              {likeCount}
+            </motion.span>
+          </div>
+        </div>
+        
+        {/* Message content with enhanced typography */}
+        <motion.div
+          className="relative"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <p className="text-base md:text-lg text-gray-200/90 leading-relaxed tracking-wide whitespace-pre-wrap break-words">
+            {content}
+          </p>
+        </motion.div>
+      </div>
     </motion.div>
   );
 } 

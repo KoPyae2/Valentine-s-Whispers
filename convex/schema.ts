@@ -7,5 +7,7 @@ export default defineSchema({
     name: v.string(),
     gender: v.string(),
     createdAt: v.number(),
+    likes: v.number(),
+    likedBy: v.array(v.string()),
   }).index("by_creation", ["createdAt"]),
 }); 
