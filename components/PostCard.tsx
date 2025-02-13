@@ -7,7 +7,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 interface PostCardProps {
@@ -37,6 +37,7 @@ export default function PostCard({
   const [isLiking, setIsLiking] = useState(false);
   const toggleLike = useMutation(api.posts.toggleLike);
   const pathname = usePathname();
+  const router = useRouter();
   const isDetailPage = pathname.startsWith("/posts/");
 
   useEffect(() => {
@@ -73,6 +74,12 @@ export default function PostCard({
       .finally(() => {
         setIsLiking(false);
       });
+  };
+
+  const handleCommentClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/posts/${id}`);
   };
 
   const handleShare = (e: React.MouseEvent) => {
@@ -134,7 +141,7 @@ export default function PostCard({
         </button>
 
         <button
-          onClick={(e) => e.preventDefault()}
+          onClick={handleCommentClick}
           className="flex items-center gap-1 text-gray-400/80 hover:text-pink-400 transition-colors"
         >
           <MessageCircle className="w-5 h-5" />
