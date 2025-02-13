@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Heart, Mars, Venus, Check } from "lucide-react";
+import { Send, Heart, Mars, Venus, Check, Loader2 } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
@@ -23,11 +23,14 @@ export default function CreatePostForm() {
   const [content, setContent] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const createPost = useMutation(api.posts.createPost);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() || !name.trim()) return;
+    if (!content.trim() || !name.trim() || isSubmitting) return;
+    
+    setIsSubmitting(true);
     
     try {
       await createPost({ 
@@ -49,6 +52,8 @@ export default function CreatePostForm() {
       }, 1500);
     } catch (error) {
       console.error('Failed to create post:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -293,15 +298,36 @@ export default function CreatePostForm() {
             maxLength={500}
           />
           <div className="absolute bottom-3 right-3">
-            <motion.button
-              type="submit"
-              className="p-2.5 md:p-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              disabled={!content.trim() || !name.trim()}
-            >
-              <Send className="w-4 h-4 md:w-5 md:h-5" />
-            </motion.button>
+            <div className="flex justify-end">
+              <motion.button
+                type="submit"
+                disabled={!content.trim() || !name.trim() || isSubmitting}
+                className={`
+                  relative px-6 py-2.5 rounded-lg
+                  flex items-center gap-2
+                  transition-all duration-300
+                  ${isExpanded ? (
+                    content.trim() && name.trim()
+                      ? "bg-gradient-to-r from-pink-500 to-purple-500 text-white hover:from-pink-600 hover:to-purple-600"
+                      : "bg-pink-500/20 text-pink-300/50 cursor-not-allowed"
+                  ) : "bg-pink-500/20 text-pink-300 hover:bg-pink-500/30"}
+                `}
+                whileHover={isExpanded && content.trim() && name.trim() && !isSubmitting ? { scale: 1.02 } : {}}
+                whileTap={isExpanded && content.trim() && name.trim() && !isSubmitting ? { scale: 0.98 } : {}}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Posting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" />
+                    <span>{isExpanded ? "Post" : "Write a post"}</span>
+                  </>
+                )}
+              </motion.button>
+            </div>
           </div>
         </div>
 
